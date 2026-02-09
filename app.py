@@ -106,10 +106,17 @@ from datetime import datetime, timezone
 def dashboard():
     if request.method == "POST":
         title = request.form["title"]
+        deadline_str = request.form.get("deadline")
+
+        if not deadline_str:
+            flash("Please select a deadline!")
+            return redirect(url_for("dashboard"))
+
         deadline = datetime.strptime(
-            request.form["deadline"],
+            deadline_str,
             "%Y-%m-%dT%H:%M"
         ).replace(tzinfo=timezone.utc)
+
 
         task = Task(title=title, deadline=deadline, user_id=current_user.id)
         db.session.add(task)
