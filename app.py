@@ -99,19 +99,32 @@ def login():
     return render_template("login.html")
 
 
+from datetime import datetime, timezone
+
 @app.route("/dashboard", methods=["GET", "POST"])
 @login_required
 def dashboard():
     if request.method == "POST":
         title = request.form["title"]
-        deadline = datetime.strptime(request.form["deadline"], "%Y-%m-%dT%H:%M")
+        deadline = datetime.strptime(
+            request.form["deadline"],
+            "%Y-%m-%dT%H:%M"
+        ).replace(tzinfo=timezone.utc)
 
         task = Task(title=title, deadline=deadline, user_id=current_user.id)
         db.session.add(task)
         db.session.commit()
 
     tasks = Task.query.filter_by(user_id=current_user.id).all()
-    return render_template("dashboard.html", tasks=tasks)
+
+    # Server time
+    server_time = datetime.now(timezone.utc)
+
+    return render_template(
+        "dashboard.html",
+        tasks=tasks,
+        server_time=server_time
+    )
 
 
 @app.route("/logout")
