@@ -3,7 +3,7 @@ from flask_login import LoginManager, login_user, login_required, logout_user, c
 from flask_mail import Mail, Message
 from werkzeug.security import generate_password_hash, check_password_hash
 from apscheduler.schedulers.background import BackgroundScheduler
-from datetime import datetime
+from datetime import datetime, timezone
 from config import Config
 from models import db, User, Task
 
@@ -29,7 +29,9 @@ def load_user(user_id):
 
 def check_deadlines():
     with app.app_context():
-        now = datetime.now()
+        from datetime import datetime, timezone
+        now = datetime.now(timezone.utc)
+
         tasks = Task.query.filter(Task.deadline <= now, Task.notified == False).all()
 
         for task in tasks:
